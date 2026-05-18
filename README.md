@@ -2,9 +2,10 @@
 
 ## Integrantes
 
-- Pedro Augusto de Castro Neves Pereira
+
 - Bruno Correa Pscheidt
 - João Vitor Dadas
+- Pedro Augusto de Castro Neves Pereira
 
 ## Contexto
 
