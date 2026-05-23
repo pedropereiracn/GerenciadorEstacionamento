@@ -1,6 +1,13 @@
 # Compiled class file
 *.class
 
+# Build output
+out/
+bin/
+
+# Arquivos de persistência (gerados em runtime)
+*.ser
+
 # Log file
 *.log
 

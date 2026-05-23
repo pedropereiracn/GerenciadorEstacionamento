@@ -1,10 +1,13 @@
 package app;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
-import Modelo.Veiculo;
-import Modelo.Carro;
-import Modelo.Moto;
+import modelo.Carro;
+import modelo.Moto;
+import modelo.Veiculo;
+import persistencia.PersistenciaService;
 
 public class Main {
 
@@ -40,3 +43,40 @@ public class Main {
 
             System.out.print("Digite as cilindradas: ");
             int cilindradas = sc.nextInt();
+
+            veiculo = new Moto(placa, modelo, cilindradas);
+
+        } else {
+            System.out.println("Opção inválida.");
+            sc.close();
+            return;
+        }
+
+        System.out.println("\n--- Veículo cadastrado ---");
+        System.out.println(veiculo);
+        System.out.println("Tarifa para 2 horas: R$ " + String.format("%.2f", veiculo.calcularTarifa(120)));
+
+        // ===== Persistência via serialização =====
+        ArrayList<Veiculo> veiculos = new ArrayList<>();
+        veiculos.add(veiculo);
+
+        PersistenciaService<ArrayList<Veiculo>> servico = new PersistenciaService<>();
+        String caminho = "veiculos.ser";
+
+        try {
+            servico.salvar(veiculos, caminho);
+            System.out.println("\n--- Persistência ---");
+            System.out.println("Salvos " + veiculos.size() + " veículo(s) em " + caminho);
+
+            ArrayList<Veiculo> recuperados = servico.carregar(caminho);
+            System.out.println("Recuperados " + recuperados.size() + " veículo(s):");
+            for (Veiculo v : recuperados) {
+                System.out.println("  - " + v);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Erro de persistência: " + e.getMessage());
+        }
+
+        sc.close();
+    }
+}
