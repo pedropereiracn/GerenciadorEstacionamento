@@ -1,8 +1,13 @@
 package modelo;
 
+import java.io.Serializable;
+
 import excecoes.VagaOcupadaException;
 
-public abstract class Vaga {
+public abstract class Vaga implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     private int numero;
     private boolean ocupada;
 
