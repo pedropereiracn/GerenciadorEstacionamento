@@ -1,9 +1,11 @@
 package modelo;
 
+import excecoes.VagaOcupadaException;
+
 public abstract class Vaga {
     private int numero;
     private boolean ocupada;
-    
+
     public Vaga(int numero) {
         this.numero = numero;
         this.ocupada = false; // começa livre
@@ -17,7 +19,10 @@ public abstract class Vaga {
         return ocupada;
     }
 
-    public void ocupar() {
+    public void ocupar() throws VagaOcupadaException {
+        if (this.ocupada) {
+            throw new VagaOcupadaException(this.numero);
+        }
         this.ocupada = true;
     }
 
