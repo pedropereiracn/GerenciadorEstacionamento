@@ -10,10 +10,16 @@ public abstract class Vaga implements Serializable {
 
     private int numero;
     private boolean ocupada;
+    private TipoPreferencia preferencia;
 
     public Vaga(int numero) {
         this.numero = numero;
         this.ocupada = false; // começa livre
+    }
+
+    public Vaga(int numero, TipoPreferencia preferencia) {
+        this(numero);
+        this.preferencia = preferencia;
     }
 
     public int getNumero() {
@@ -22,6 +28,10 @@ public abstract class Vaga implements Serializable {
 
     public boolean isOcupada() {
         return ocupada;
+    }
+
+    public TipoPreferencia getPreferencia() {
+        return preferencia;
     }
 
     public void ocupar() throws VagaOcupadaException {

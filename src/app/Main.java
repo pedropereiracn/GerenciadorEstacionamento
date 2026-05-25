@@ -4,8 +4,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import excecoes.VagaOcupadaException;
 import modelo.Carro;
 import modelo.Moto;
+import modelo.TipoPreferencia;
+import modelo.Vaga;
+import modelo.VagaCoberta;
+import modelo.VagaComum;
 import modelo.Veiculo;
 import persistencia.PersistenciaService;
 
@@ -76,6 +81,32 @@ public class Main {
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Erro de persistência: " + e.getMessage());
         }
+
+        // ===== Demonstração de Vagas =====
+        System.out.println("\n=== Demonstração de Vagas ===");
+
+        ArrayList<Vaga> vagas = new ArrayList<>();
+        vagas.add(new VagaComum(1));
+        vagas.add(new VagaCoberta(2));
+        vagas.add(new VagaComum(3, TipoPreferencia.IDOSO));
+        vagas.add(new VagaCoberta(4, TipoPreferencia.CADEIRANTE));
+
+        for (Vaga v : vagas) {
+            System.out.println(v);
+        }
+
+        System.out.println("\n--- Teste de ocupação ---");
+        Vaga primeira = vagas.get(0);
+        try {
+            primeira.ocupar();
+            System.out.println("Vaga " + primeira.getNumero() + " ocupada com sucesso.");
+            primeira.ocupar(); // deve lançar exceção
+        } catch (VagaOcupadaException e) {
+            System.out.println("Capturada exceção: " + e.getMessage());
+        }
+
+        primeira.liberar();
+        System.out.println("Vaga " + primeira.getNumero() + " liberada.");
 
         sc.close();
     }
