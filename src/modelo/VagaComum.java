@@ -2,6 +2,8 @@ package modelo;
 
 public class VagaComum extends Vaga {
 
+    private static final double MULTIPLICADOR = 1.0;
+
     public VagaComum(int numero) {
         super(numero);
     }
@@ -12,7 +14,7 @@ public class VagaComum extends Vaga {
 
     @Override
     public double getMultiplicador() {
-        return 1.0;
+        return MULTIPLICADOR;
     }
 
     @Override
