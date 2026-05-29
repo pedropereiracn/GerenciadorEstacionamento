@@ -2,6 +2,6 @@ package modelo;
 
 public enum TipoPreferencia {
     IDOSO,
-    CADEIRANTE,
+    PCD,
     AUTISTA
 }
