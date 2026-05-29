@@ -1,0 +1,38 @@
+package modelo;
+
+public class ClienteMensalista extends Cliente implements Pagavel {
+
+    private static final long serialVersionUID = 1L;
+
+    public static final double MENSALIDADE_COMUM = 200.0;
+    public static final double MENSALIDADE_COBERTA = 300.0;
+
+    private double valorMensalidade;
+    private boolean usaVagaCoberta;
+
+    public ClienteMensalista(String nome, String cpf, boolean usaVagaCoberta) {
+        super(nome, cpf);
+        this.usaVagaCoberta = usaVagaCoberta;
+        this.valorMensalidade = usaVagaCoberta ? MENSALIDADE_COBERTA : MENSALIDADE_COMUM;
+    }
+
+    public double getValorMensalidade() {
+        return valorMensalidade;
+    }
+
+    public boolean usaVagaCoberta() {
+        return usaVagaCoberta;
+    }
+
+    @Override
+    public String descricao() {
+        String tipo = usaVagaCoberta ? "Coberta" : "Comum";
+        return String.format("Cliente Mensalista: %s | CPF: %s | Vaga %s | Mensalidade: R$ %.2f",
+                getNome(), getCpf(), tipo, valorMensalidade);
+    }
+
+    @Override
+    public double calcularValorPagar() {
+        return valorMensalidade;
+    }
+}
