@@ -22,12 +22,16 @@ public class Main {
 
         System.out.println("=== Sistema de Gerenciamento de Estacionamento ===\n");
 
+        // ==========================
+        // Cadastro do veículo
+        // ==========================
         System.out.println("Escolha o tipo de veículo:");
         System.out.println("1 - Carro");
         System.out.println("2 - Moto");
+        System.out.print("Opção: ");
 
         int opcao = sc.nextInt();
-        sc.nextLine(); // limpar buffer
+        sc.nextLine();
 
         Veiculo veiculo;
 
@@ -59,54 +63,165 @@ public class Main {
 
         System.out.println("\n--- Veículo cadastrado ---");
         System.out.println(veiculo);
-        System.out.println("Tarifa para 2 horas: R$ " + String.format("%.2f", veiculo.calcularTarifa(120)));
 
-        // ===== Persistência via serialização =====
+        // ==========================
+        // Persistência
+        // ==========================
         ArrayList<Veiculo> veiculos = new ArrayList<>();
         veiculos.add(veiculo);
 
-        PersistenciaService<ArrayList<Veiculo>> servico = new PersistenciaService<>();
+        PersistenciaService<ArrayList<Veiculo>> servico =
+                new PersistenciaService<>();
+
         String caminho = "veiculos.ser";
 
         try {
+
             servico.salvar(veiculos, caminho);
+
             System.out.println("\n--- Persistência ---");
-            System.out.println("Salvos " + veiculos.size() + " veículo(s) em " + caminho);
+            System.out.println("Salvos "
+                    + veiculos.size()
+                    + " veículo(s) em "
+                    + caminho);
 
-            ArrayList<Veiculo> recuperados = servico.carregar(caminho);
-            System.out.println("Recuperados " + recuperados.size() + " veículo(s):");
+            ArrayList<Veiculo> recuperados =
+                    servico.carregar(caminho);
+
+            System.out.println("Recuperados "
+                    + recuperados.size()
+                    + " veículo(s):");
+
             for (Veiculo v : recuperados) {
-                System.out.println("  - " + v);
+                System.out.println(" - " + v);
             }
+
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Erro de persistência: " + e.getMessage());
+            System.err.println(
+                    "Erro de persistência: "
+                            + e.getMessage());
         }
 
-        // ===== Demonstração de Vagas =====
-        System.out.println("\n=== Demonstração de Vagas ===");
-
+        // ==========================
+        // Criação das 30 vagas
+        // ==========================
         ArrayList<Vaga> vagas = new ArrayList<>();
-        vagas.add(new VagaComum(1));
-        vagas.add(new VagaCoberta(2));
-        vagas.add(new VagaComum(3, TipoPreferencia.IDOSO));
-        vagas.add(new VagaCoberta(4, TipoPreferencia.CADEIRANTE));
 
-        for (Vaga v : vagas) {
-            System.out.println(v);
+        // 15 vagas comuns
+        for (int i = 1; i <= 15; i++) {
+            vagas.add(new VagaComum(i));
         }
 
-        System.out.println("\n--- Teste de ocupação ---");
-        Vaga primeira = vagas.get(0);
-        try {
-            primeira.ocupar();
-            System.out.println("Vaga " + primeira.getNumero() + " ocupada com sucesso.");
-            primeira.ocupar(); // deve lançar exceção
-        } catch (VagaOcupadaException e) {
-            System.out.println("Capturada exceção: " + e.getMessage());
+        // 5 vagas cobertas
+        for (int i = 16; i <= 20; i++) {
+            vagas.add(new VagaCoberta(i));
         }
 
-        primeira.liberar();
-        System.out.println("Vaga " + primeira.getNumero() + " liberada.");
+        // 5 vagas para idosos
+        for (int i = 21; i <= 25; i++) {
+            vagas.add(
+                    new VagaComum(
+                            i,
+                            TipoPreferencia.IDOSO
+                    )
+            );
+        }
+
+        // 3 vagas para PCD
+        for (int i = 26; i <= 28; i++) {
+            vagas.add(
+                    new VagaComum(
+                            i,
+                            TipoPreferencia.PCD
+                    )
+            );
+        }
+
+        // 2 vagas para autistas
+        for (int i = 29; i <= 30; i++) {
+            vagas.add(
+                    new VagaComum(
+                            i,
+                            TipoPreferencia.AUTISTA
+                    )
+            );
+        }
+
+        System.out.println("\n=== Vagas Disponíveis ===");
+
+        for (Vaga vaga : vagas) {
+
+            String preferencia;
+
+            if (vaga.getPreferencia() == null) {
+                preferencia = "Nenhuma";
+            } else {
+                preferencia = vaga.getPreferencia().toString();
+            }
+
+            System.out.println(
+                    "Vaga "
+                            + vaga.getNumero()
+                            + " | Preferência: "
+                            + preferencia
+                            + " | Ocupada: "
+                            + vaga.isOcupada()
+            );
+        }
+
+        // ==========================
+        // Escolha da vaga
+        // ==========================
+        System.out.print(
+                "\nDigite o número da vaga desejada: ");
+
+        int numeroVaga = sc.nextInt();
+
+        Vaga vagaEscolhida = null;
+
+        for (Vaga vaga : vagas) {
+
+            if (vaga.getNumero() == numeroVaga) {
+                vagaEscolhida = vaga;
+                break;
+            }
+        }
+
+        if (vagaEscolhida == null) {
+
+            System.out.println("Vaga inexistente.");
+
+        } else {
+
+            try {
+
+                vagaEscolhida.ocupar();
+
+                System.out.println(
+                        "\nVaga ocupada com sucesso!"
+                );
+
+                System.out.println(
+                        "Veículo: " + veiculo
+                );
+
+                System.out.println(
+                        "Número da vaga: "
+                                + vagaEscolhida.getNumero()
+                );
+
+                System.out.println(
+                        "Preferência: "
+                                + vagaEscolhida.getPreferencia()
+                );
+
+            } catch (VagaOcupadaException e) {
+
+                System.out.println(
+                        "Erro: " + e.getMessage()
+                );
+            }
+        }
 
         sc.close();
     }
