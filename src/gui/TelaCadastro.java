@@ -170,11 +170,12 @@ public class TelaCadastro extends JFrame {
             return;
         }
 
-        // valida o formato da placa: ABC1234 (antigo) ou ABC1D23 (Mercosul)
+        // valida o formato da placa: AAA-9999 (antiga) ou AAA-9A99 (Mercosul)
         if (!p.matches("[A-Z]{3}[0-9][A-Z0-9][0-9]{2}")) {
-            mostrarMensagem("⚠ Placa inválida (use ABC1234 ou ABC1D23).", VERMELHO);
+            mostrarMensagem("⚠ Placa inválida (use AAA-9999 ou AAA-9A99).", VERMELHO);
             return;
         }
+        String placaFmt = formatarPlaca(p); // exibe com hifen: ABC-1D23
 
         int numero;
         try {
@@ -186,9 +187,9 @@ public class TelaCadastro extends JFrame {
 
         Veiculo v;
         if (btCarro.isSelected()) {
-            v = new Carro(p, m, numero);
+            v = new Carro(placaFmt, m, numero);
         } else {
-            v = new Moto(p, m, numero);
+            v = new Moto(placaFmt, m, numero);
         }
 
         veiculos.add(v);
@@ -199,13 +200,18 @@ public class TelaCadastro extends JFrame {
         extra.setText("");
 
         String tipo = btCarro.isSelected() ? "Carro" : "Moto";
-        mostrarMensagem("✓ " + tipo + " " + p + " cadastrado.", VERDE);
+        mostrarMensagem("✓ " + tipo + " " + placaFmt + " cadastrado.", VERDE);
     }
 
     // mostra o feedback colorido embaixo do botao
     private void mostrarMensagem(String txt, Color cor) {
         mensagem.setText(txt);
         mensagem.setForeground(cor);
+    }
+
+    // coloca o hifen do padrao brasileiro: ABC1D23 -> ABC-1D23
+    private static String formatarPlaca(String limpo) {
+        return limpo.length() > 3 ? limpo.substring(0, 3) + "-" + limpo.substring(3) : limpo;
     }
 
     // ---------- helpers de estilo ----------
@@ -405,6 +411,11 @@ public class TelaCadastro extends JFrame {
             aplicar(fb, off, len, txt, a);
         }
 
+        @Override
+        public void remove(FilterBypass fb, int off, int len) throws BadLocationException {
+            aplicar(fb, off, len, "", null);
+        }
+
         private void aplicar(FilterBypass fb, int off, int len, String txt, AttributeSet a)
                 throws BadLocationException {
             var doc = fb.getDocument();
@@ -418,7 +429,7 @@ public class TelaCadastro extends JFrame {
             for (int i = 0; i < novo.length(); i++) {
                 if (!posicaoOk(novo.charAt(i), i)) return;
             }
-            fb.replace(0, doc.getLength(), novo, a);
+            fb.replace(0, doc.getLength(), formatarPlaca(novo), a);
         }
 
         private boolean posicaoOk(char ch, int i) {
