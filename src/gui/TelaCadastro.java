@@ -170,9 +170,9 @@ public class TelaCadastro extends JFrame {
             return;
         }
 
-        // valida o formato da placa: AAA-9999 (antiga) ou AAA-9A99 (Mercosul)
-        if (!p.matches("[A-Z]{3}[0-9][A-Z0-9][0-9]{2}")) {
-            mostrarMensagem("⚠ Placa inválida (use AAA-9999 ou AAA-9A99).", VERMELHO);
+        // valida o formato Mercosul: AAA-9A99 (letras, numero, letra, numero, numero)
+        if (!p.matches("[A-Z]{3}[0-9][A-Z][0-9]{2}")) {
+            mostrarMensagem("⚠ Placa inválida (use o padrão Mercosul AAA-9A99).", VERMELHO);
             return;
         }
         String placaFmt = formatarPlaca(p); // exibe com hifen: ABC-1D23
@@ -397,7 +397,7 @@ public class TelaCadastro extends JFrame {
         }
     }
 
-    // ===== mascara de placa brasileira (ABC1234 antigo e ABC1D23 Mercosul) =====
+    // ===== mascara de placa Mercosul: AAA-9A99 (letras, numero, letra, numero, numero) =====
     private static class MascaraPlaca extends DocumentFilter {
         @Override
         public void insertString(FilterBypass fb, int off, String txt, AttributeSet a)
@@ -433,10 +433,10 @@ public class TelaCadastro extends JFrame {
         }
 
         private boolean posicaoOk(char ch, int i) {
-            if (i <= 2) return Character.isLetter(ch);        // ABC
-            if (i == 3) return Character.isDigit(ch);         // 1
-            if (i == 4) return Character.isLetterOrDigit(ch); // D (Mercosul) ou digito (antigo)
-            return Character.isDigit(ch);                     // 23
+            if (i <= 2) return Character.isLetter(ch); // AAA (letras)
+            if (i == 3) return Character.isDigit(ch);  // 9  (numero)
+            if (i == 4) return Character.isLetter(ch); // A  (letra - Mercosul)
+            return Character.isDigit(ch);              // 99 (numeros)
         }
     }
 
