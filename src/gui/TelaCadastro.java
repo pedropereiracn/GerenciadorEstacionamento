@@ -2,6 +2,10 @@ package gui;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
@@ -84,6 +88,8 @@ public class TelaCadastro extends JFrame {
         esquerda(seg);
 
         placa = campo();
+        // mascara de placa brasileira no input da placa
+        ((AbstractDocument) placa.getDocument()).setDocumentFilter(new MascaraPlaca());
         modelo = campo();
         extra = campo();
 
@@ -382,6 +388,44 @@ public class TelaCadastro extends JFrame {
         public Insets getBorderInsets(Component c, Insets i) {
             i.set(padV, padH, padV, padH);
             return i;
+        }
+    }
+
+    // ===== mascara de placa brasileira (ABC1234 antigo e ABC1D23 Mercosul) =====
+    private static class MascaraPlaca extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int off, String txt, AttributeSet a)
+                throws BadLocationException {
+            aplicar(fb, off, 0, txt, a);
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int off, int len, String txt, AttributeSet a)
+                throws BadLocationException {
+            aplicar(fb, off, len, txt, a);
+        }
+
+        private void aplicar(FilterBypass fb, int off, int len, String txt, AttributeSet a)
+                throws BadLocationException {
+            var doc = fb.getDocument();
+            String atual = doc.getText(0, doc.getLength());
+            String novo = atual.substring(0, off) + (txt == null ? "" : txt)
+                    + atual.substring(off + len);
+            // limpa: maiusculo, so letra/numero, no maximo 7 caracteres
+            novo = novo.toUpperCase().replaceAll("[^A-Z0-9]", "");
+            if (novo.length() > 7) novo = novo.substring(0, 7);
+            // valida cada posicao; se nao encaixa no padrao, ignora a digitacao
+            for (int i = 0; i < novo.length(); i++) {
+                if (!posicaoOk(novo.charAt(i), i)) return;
+            }
+            fb.replace(0, doc.getLength(), novo, a);
+        }
+
+        private boolean posicaoOk(char ch, int i) {
+            if (i <= 2) return Character.isLetter(ch);        // ABC
+            if (i == 3) return Character.isDigit(ch);         // 1
+            if (i == 4) return Character.isLetterOrDigit(ch); // D (Mercosul) ou digito (antigo)
+            return Character.isDigit(ch);                     // 23
         }
     }
 
