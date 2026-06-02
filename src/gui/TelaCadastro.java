@@ -20,6 +20,8 @@ public class TelaCadastro extends JFrame {
     private static final Color BORDA  = new Color(229, 229, 224); // linha fina
     private static final Color ACENTO = new Color(35, 131, 226);  // azul
     private static final Color ACENTO_HOVER = new Color(24, 116, 205);
+    private static final Color VERDE    = new Color(22, 138, 73);   // sucesso
+    private static final Color VERMELHO  = new Color(204, 67, 61);   // erro
 
     private static final String FAMILIA = escolherFonte();
 
@@ -29,6 +31,7 @@ public class TelaCadastro extends JFrame {
     private JToggleButton btCarro;
     private JToggleButton btMoto;
     private JTextArea lista;
+    private JLabel mensagem; // feedback de sucesso/erro embaixo do botao
 
     private final java.util.ArrayList<Veiculo> veiculos = new java.util.ArrayList<>();
 
@@ -87,6 +90,10 @@ public class TelaCadastro extends JFrame {
         PrimaryButton bt = new PrimaryButton("Cadastrar");
         bt.addActionListener(e -> cadastrarVeiculo());
 
+        mensagem = new JLabel(" "); // espaco reserva a altura da linha
+        mensagem.setFont(fonte(13, Font.BOLD));
+        esquerda(mensagem);
+
         card.add(titulo);
         card.add(Box.createVerticalStrut(4));
         card.add(sub);
@@ -108,6 +115,8 @@ public class TelaCadastro extends JFrame {
         card.add(extra);
         card.add(Box.createVerticalStrut(26));
         card.add(bt);
+        card.add(Box.createVerticalStrut(12));
+        card.add(mensagem);
         return card;
     }
 
@@ -151,37 +160,46 @@ public class TelaCadastro extends JFrame {
         String m = modelo.getText().trim();
 
         if (p.isEmpty() || m.isEmpty() || extra.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Preencha todos os campos.");
+            mostrarMensagem("⚠ Preencha todos os campos.", VERMELHO);
             return;
         }
 
         // valida o formato da placa: ABC1234 (antigo) ou ABC1D23 (Mercosul)
         if (!p.matches("[A-Z]{3}[0-9][A-Z0-9][0-9]{2}")) {
-            JOptionPane.showMessageDialog(this,
-                    "Placa inválida. Use o formato ABC1234 ou ABC1D23.");
+            mostrarMensagem("⚠ Placa inválida (use ABC1234 ou ABC1D23).", VERMELHO);
             return;
         }
 
+        int numero;
         try {
-            int numero = Integer.parseInt(extra.getText().trim());
-
-            Veiculo v;
-            if (btCarro.isSelected()) {
-                v = new Carro(p, m, numero);
-            } else {
-                v = new Moto(p, m, numero);
-            }
-
-            veiculos.add(v);
-            lista.append(v.toString() + "\n"); // toString polimorfico
-
-            placa.setText("");
-            modelo.setText("");
-            extra.setText("");
+            numero = Integer.parseInt(extra.getText().trim());
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Portas/Cilindradas precisa ser um número.");
+            mostrarMensagem("⚠ Portas/Cilindradas precisa ser um número.", VERMELHO);
+            return;
         }
+
+        Veiculo v;
+        if (btCarro.isSelected()) {
+            v = new Carro(p, m, numero);
+        } else {
+            v = new Moto(p, m, numero);
+        }
+
+        veiculos.add(v);
+        lista.append(v.toString() + "\n"); // toString polimorfico
+
+        placa.setText("");
+        modelo.setText("");
+        extra.setText("");
+
+        String tipo = btCarro.isSelected() ? "Carro" : "Moto";
+        mostrarMensagem("✓ " + tipo + " " + p + " cadastrado.", VERDE);
+    }
+
+    // mostra o feedback colorido embaixo do botao
+    private void mostrarMensagem(String txt, Color cor) {
+        mensagem.setText(txt);
+        mensagem.setForeground(cor);
     }
 
     // ---------- helpers de estilo ----------
