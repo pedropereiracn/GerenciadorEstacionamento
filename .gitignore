@@ -7,6 +7,7 @@ bin/
 
 # Arquivos de persistência (gerados em runtime)
 *.ser
+*.dat
 
 # Log file
 *.log
