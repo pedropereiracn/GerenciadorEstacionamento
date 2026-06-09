@@ -4,13 +4,25 @@ public class ClienteAvulso extends Cliente implements Pagavel {
 
     private static final long serialVersionUID = 1L;
 
-    public ClienteAvulso(String nome, String cpf) {
-        super(nome, cpf);
+    private TipoPreferencia credencial;
+
+    public ClienteAvulso() {
+        super("Avulso", "---");
+    }
+
+    public ClienteAvulso(TipoPreferencia credencial) {
+        super("Avulso", "---");
+        this.credencial = credencial;
+    }
+
+    public TipoPreferencia getCredencial() {
+        return credencial;
     }
 
     @Override
     public String descricao() {
-        return "Cliente Avulso: " + getNome() + " | CPF: " + getCpf();
+        String c = (credencial == null) ? "nenhuma" : credencial.toString();
+        return "Cliente Avulso | Credencial: " + c;
     }
 
     @Override
