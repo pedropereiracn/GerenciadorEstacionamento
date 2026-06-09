@@ -62,6 +62,9 @@ public class Ticket implements Serializable {
     }
 
     public double calcularValor() {
+        if (cliente instanceof ClienteMensalista) {
+            return 0.0; // mensalista ja paga via mensalidade
+        }
         double base = veiculo.calcularTarifa((int) minutos());
         return base * vaga.getMultiplicador();
     }

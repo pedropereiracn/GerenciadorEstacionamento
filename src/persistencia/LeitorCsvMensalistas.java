@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import modelo.ClienteMensalista;
+import modelo.TipoPreferencia;
 
 // le mensalistas de um arquivo .csv (uma pessoa por linha).
-// formato: nome,cpf,placa,coberta   ->   ex: Joao Vitor,12345678901,ABC1D23,sim
+// formato: nome,cpf,placa,coberta[,credencial]
+// ex 4 col: Joao Vitor,12345678901,ABC1D23,sim
+// ex 5 col: Maria Souza,98765432100,XYZ9K88,nao,IDOSO
 public class LeitorCsvMensalistas {
 
     public List<ClienteMensalista> ler(String caminho) throws IOException {
@@ -31,9 +34,25 @@ public class LeitorCsvMensalistas {
                     || col[3].trim().equalsIgnoreCase("coberta")
                     || col[3].trim().equalsIgnoreCase("true");
 
-            lista.add(new ClienteMensalista(nome, cpf, placa, coberta));
+            TipoPreferencia credencial = (col.length >= 5) ? parseCredencial(col[4].trim()) : null;
+
+            if (credencial == null) {
+                lista.add(new ClienteMensalista(nome, cpf, placa, coberta));
+            } else {
+                lista.add(new ClienteMensalista(nome, cpf, placa, coberta, credencial));
+            }
         }
         return lista;
+    }
+
+    // converte texto em TipoPreferencia. retorna null se vazio ou invalido.
+    private TipoPreferencia parseCredencial(String texto) {
+        if (texto.isEmpty()) return null;
+        try {
+            return TipoPreferencia.valueOf(texto.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     // deixa o cpf no padrao 000.000.000-00

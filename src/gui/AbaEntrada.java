@@ -57,23 +57,30 @@ public class AbaEntrada extends JPanel {
         add(Box.createVerticalGlue());
     }
 
-    // monta as 30 vagas iguais ao Main: 15 comuns, 5 cobertas, 5 idoso, 3 pcd, 2 autista
+    // monta as 30 vagas: agora cada categoria tem opcao comum E coberta.
+    // 1-12 comum / 13-17 coberta / 18-21 idoso comum / 22-23 idoso coberta
+    // 24-26 pcd comum / 27-28 pcd coberta / 29 autista comum / 30 autista coberta
     private void criarVagas() {
-        for (int i = 1; i <= 15; i++) {
+        for (int i = 1; i <= 12; i++) {
             vagas.add(new VagaComum(i));
         }
-        for (int i = 16; i <= 20; i++) {
+        for (int i = 13; i <= 17; i++) {
             vagas.add(new VagaCoberta(i));
         }
-        for (int i = 21; i <= 25; i++) {
+        for (int i = 18; i <= 21; i++) {
             vagas.add(new VagaComum(i, TipoPreferencia.IDOSO));
         }
-        for (int i = 26; i <= 28; i++) {
+        for (int i = 22; i <= 23; i++) {
+            vagas.add(new VagaCoberta(i, TipoPreferencia.IDOSO));
+        }
+        for (int i = 24; i <= 26; i++) {
             vagas.add(new VagaComum(i, TipoPreferencia.PCD));
         }
-        for (int i = 29; i <= 30; i++) {
-            vagas.add(new VagaComum(i, TipoPreferencia.AUTISTA));
+        for (int i = 27; i <= 28; i++) {
+            vagas.add(new VagaCoberta(i, TipoPreferencia.PCD));
         }
+        vagas.add(new VagaComum(29, TipoPreferencia.AUTISTA));
+        vagas.add(new VagaCoberta(30, TipoPreferencia.AUTISTA));
     }
 
     private JComponent cardEntrada() {
@@ -211,11 +218,7 @@ public class AbaEntrada extends JPanel {
         // 1) e mensalista? procura a placa nas fichas
         ClienteMensalista m = buscarMensalista(placaFmt);
         if (m != null) {
-            String vaga = m.usaVagaCoberta() ? "coberta" : "comum";
-            mostrarResultado(String.format(
-                    "<html>✓ <b>Mensalista:</b> %s<br>Vaga %s · mensalidade R$ %.2f em dia · pode entrar.</html>",
-                    m.getNome(), vaga, m.getValorMensalidade()), VERDE);
-            placa.setText("");
+            entrarMensalista(m, placaFmt);
             return;
         }
 
@@ -270,6 +273,60 @@ public class AbaEntrada extends JPanel {
             }
         }
         feedback("⚠ Ticket #" + num + " não está no pátio.", VERMELHO);
+    }
+
+    // mensalista: ocupa vaga adequada (tipo + credencial) e gera ticket valor 0.
+    private void entrarMensalista(ClienteMensalista m, String placaFmt) {
+        Vaga vagaEscolhida = buscarVagaParaMensalista(m);
+        if (vagaEscolhida == null) {
+            mostrarResultado("⚠ Sem vagas " + (m.usaVagaCoberta() ? "cobertas" : "comuns")
+                    + " disponíveis no momento.", VERMELHO);
+            return;
+        }
+
+        try {
+            vagaEscolhida.podeOcupar(m);
+            vagaEscolhida.ocupar();
+        } catch (VagaIncompativelException | VagaOcupadaException ex) {
+            mostrarResultado("⚠ " + ex.getMessage(), VERMELHO);
+            return;
+        }
+
+        // veiculo dummy do mensalista (carro, so pra registrar placa no ticket)
+        Veiculo v = new Carro(placaFmt, "Mensalista", 0);
+        Ticket t = new Ticket(proximoTicket++, v, vagaEscolhida, m);
+        tickets.add(t);
+        atualizarPatio();
+        mostrarResultado(String.format(
+                "<html>✓ <b>Mensalista:</b> %s<br>Ticket #%03d · Vaga %d · mensalidade R$ %.2f em dia.</html>",
+                m.getNome(), t.getNumero(), vagaEscolhida.getNumero(), m.getValorMensalidade()), VERDE);
+        placa.setText("");
+    }
+
+    // busca vaga adequada pro mensalista combinando tipo (comum/coberta) + credencial.
+    // se tem credencial X e quer coberta, tenta VagaCoberta+X; senao cai pra VagaCoberta sem pref.
+    // mesma logica pra comum. se mensalista nao tem credencial, vai direto pra vaga sem pref.
+    private Vaga buscarVagaParaMensalista(ClienteMensalista m) {
+        boolean coberta = m.usaVagaCoberta();
+        TipoPreferencia cred = m.getCredencial();
+
+        if (cred != null) {
+            for (Vaga v : vagas) {
+                if (!v.isOcupada() && v.getPreferencia() == cred && ehDoTipo(v, coberta)) {
+                    return v;
+                }
+            }
+        }
+        for (Vaga v : vagas) {
+            if (!v.isOcupada() && v.getPreferencia() == null && ehDoTipo(v, coberta)) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    private boolean ehDoTipo(Vaga v, boolean coberta) {
+        return coberta ? (v instanceof VagaCoberta) : (v instanceof VagaComum);
     }
 
     // procura a primeira vaga livre adequada a credencial.

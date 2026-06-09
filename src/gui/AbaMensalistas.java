@@ -7,6 +7,7 @@ import java.awt.*;
 import java.util.List;
 
 import modelo.ClienteMensalista;
+import modelo.TipoPreferencia;
 
 // aba de cadastro de mensalista: a pessoa tem ficha (nome, cpf, placa) e paga por mes.
 public class AbaMensalistas extends JPanel {
@@ -18,6 +19,10 @@ public class AbaMensalistas extends JPanel {
     private JTextField placa;
     private JToggleButton btComum;
     private JToggleButton btCoberta;
+    private JToggleButton btCredNenhuma;
+    private JToggleButton btCredIdoso;
+    private JToggleButton btCredPcd;
+    private JToggleButton btCredAutista;
     private JLabel previa;   // mostra a mensalidade conforme o tipo de vaga
     private JLabel mensagem; // feedback de sucesso/erro
     private JTextArea lista;
@@ -63,6 +68,26 @@ public class AbaMensalistas extends JPanel {
         seg.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
         esquerda(seg);
 
+        btCredNenhuma = new ChipToggle("Nenhuma");
+        btCredIdoso = new ChipToggle("Idoso");
+        btCredPcd = new ChipToggle("PCD");
+        btCredAutista = new ChipToggle("Autista");
+        ButtonGroup grupoCred = new ButtonGroup();
+        grupoCred.add(btCredNenhuma);
+        grupoCred.add(btCredIdoso);
+        grupoCred.add(btCredPcd);
+        grupoCred.add(btCredAutista);
+        btCredNenhuma.setSelected(true);
+
+        JPanel segCred = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        segCred.setOpaque(false);
+        segCred.add(btCredNenhuma);
+        segCred.add(btCredIdoso);
+        segCred.add(btCredPcd);
+        segCred.add(btCredAutista);
+        segCred.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
+        esquerda(segCred);
+
         previa = new JLabel();
         previa.setFont(fonte(13, Font.BOLD));
         previa.setForeground(ACENTO);
@@ -95,6 +120,10 @@ public class AbaMensalistas extends JPanel {
         card.add(rotulo("Tipo de vaga"));
         card.add(Box.createVerticalStrut(8));
         card.add(seg);
+        card.add(Box.createVerticalStrut(16));
+        card.add(rotulo("Credencial"));
+        card.add(Box.createVerticalStrut(8));
+        card.add(segCred);
         card.add(Box.createVerticalStrut(10));
         card.add(previa);
         card.add(Box.createVerticalStrut(20));
@@ -141,6 +170,13 @@ public class AbaMensalistas extends JPanel {
         previa.setText(String.format("Mensalidade: R$ %.2f", valor));
     }
 
+    private TipoPreferencia credencialEscolhida() {
+        if (btCredIdoso.isSelected()) return TipoPreferencia.IDOSO;
+        if (btCredPcd.isSelected()) return TipoPreferencia.PCD;
+        if (btCredAutista.isSelected()) return TipoPreferencia.AUTISTA;
+        return null;
+    }
+
     private void cadastrar() {
         String n = nome.getText().trim();
         String c = cpf.getText().replaceAll("[^0-9]", "");
@@ -159,8 +195,10 @@ public class AbaMensalistas extends JPanel {
             return;
         }
 
-        ClienteMensalista m = new ClienteMensalista(
-                n, formatarCpf(c), formatarPlaca(p), btCoberta.isSelected());
+        TipoPreferencia credencial = credencialEscolhida();
+        ClienteMensalista m = (credencial == null)
+                ? new ClienteMensalista(n, formatarCpf(c), formatarPlaca(p), btCoberta.isSelected())
+                : new ClienteMensalista(n, formatarCpf(c), formatarPlaca(p), btCoberta.isSelected(), credencial);
         mensalistas.add(m);
         lista.append(m.descricao() + "\n");
         contador.setText("Total: " + mensalistas.size());
@@ -168,6 +206,7 @@ public class AbaMensalistas extends JPanel {
         nome.setText("");
         cpf.setText("");
         placa.setText("");
+        btCredNenhuma.setSelected(true);
         feedback("✓ Mensalista " + n + " cadastrado.", VERDE);
     }
 

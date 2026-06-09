@@ -1,5 +1,5 @@
-nome,cpf,placa,coberta
-Joao Vitor Dadas,12345678901,ABC1D23,sim
-Maria Souza,98765432100,XYZ9K88,nao
-Carlos Pereira,45678912300,DEF4G56,sim
-Ana Lima,32165498700,GHI7J89,nao
+nome,cpf,placa,coberta,credencial
+Joao Vitor Dadas,12345678901,ABC1D23,sim,
+Maria Souza,98765432100,XYZ9K88,nao,IDOSO
+Carlos Pereira,45678912300,DEF4G56,sim,PCD
+Ana Lima,32165498700,GHI7J89,nao,
