@@ -10,12 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import modelo.ClienteMensalista;
+import persistencia.LeitorCsvMensalistas;
 import persistencia.PersistenciaService;
 
-// aba de dados: salva e carrega os mensalistas em arquivo usando serializacao.
+// aba de dados: salva/carrega (serializacao) e importa mensalistas de um csv.
 public class AbaPersistencia extends JPanel {
 
     private static final String ARQUIVO = "mensalistas.dat";
+    private static final String CSV = "mensalistas.csv";
 
     private final List<ClienteMensalista> mensalistas;
     private final Runnable aoCarregar; // avisa a aba de mensalistas pra atualizar a lista
@@ -46,6 +48,9 @@ public class AbaPersistencia extends JPanel {
         GhostButton btCarregar = new GhostButton("Carregar do arquivo");
         btCarregar.addActionListener(e -> carregar());
 
+        GhostButton btImportar = new GhostButton("Importar CSV");
+        btImportar.addActionListener(e -> importarCsv());
+
         status = new JLabel(" ");
         status.setFont(fonte(13, Font.BOLD));
         esquerda(status);
@@ -57,11 +62,13 @@ public class AbaPersistencia extends JPanel {
 
         card.add(titulo("Dados"));
         card.add(Box.createVerticalStrut(4));
-        card.add(subtitulo("Guarda os mensalistas em arquivo (serialização)"));
+        card.add(subtitulo("Serialização (.dat) e importação de mensalistas via .csv"));
         card.add(Box.createVerticalStrut(24));
         card.add(btSalvar);
         card.add(Box.createVerticalStrut(10));
         card.add(btCarregar);
+        card.add(Box.createVerticalStrut(10));
+        card.add(btImportar);
         card.add(Box.createVerticalStrut(16));
         card.add(status);
         card.add(Box.createVerticalStrut(10));
@@ -87,6 +94,18 @@ public class AbaPersistencia extends JPanel {
             mostrar("✓ " + lidos.size() + " mensalista(s) carregados.", VERDE);
         } catch (IOException | ClassNotFoundException ex) {
             mostrar("⚠ Nada para carregar ainda (salve primeiro).", VERMELHO);
+        }
+    }
+
+    // le os mensalistas de um arquivo .csv e adiciona na lista
+    private void importarCsv() {
+        try {
+            List<ClienteMensalista> lidos = new LeitorCsvMensalistas().ler(CSV);
+            mensalistas.addAll(lidos);
+            aoCarregar.run();
+            mostrar("✓ " + lidos.size() + " mensalista(s) importados do CSV.", VERDE);
+        } catch (IOException ex) {
+            mostrar("⚠ Não achei o arquivo " + CSV, VERMELHO);
         }
     }
 
