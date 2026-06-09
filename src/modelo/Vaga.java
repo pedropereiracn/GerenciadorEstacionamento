@@ -12,7 +12,6 @@ public abstract class Vaga implements Serializable {
     private int numero;
     private boolean ocupada;
     private TipoPreferencia preferencia;
-    private ClienteMensalista reservadaPara;
 
     public Vaga(int numero) {
         this.numero = numero;
@@ -36,31 +35,19 @@ public abstract class Vaga implements Serializable {
         return preferencia;
     }
 
-    public ClienteMensalista getReservadaPara() {
-        return reservadaPara;
-    }
-
-    public void setReservadaPara(ClienteMensalista mensalista) {
-        this.reservadaPara = mensalista;
-    }
-
     public void podeOcupar(Cliente cliente) throws VagaIncompativelException {
-        if (reservadaPara != null && cliente != reservadaPara) {
-            throw new VagaIncompativelException(
-                "vaga " + numero + " reservada para outro mensalista");
+        if (preferencia == null) return;
+
+        TipoPreferencia credencial = null;
+        if (cliente instanceof ClienteAvulso) {
+            credencial = ((ClienteAvulso) cliente).getCredencial();
+        } else if (cliente instanceof ClienteMensalista) {
+            credencial = ((ClienteMensalista) cliente).getCredencial();
         }
 
-        if (preferencia != null) {
-            TipoPreferencia credencial = null;
-
-            if (cliente instanceof ClienteAvulso) {
-                credencial = ((ClienteAvulso) cliente).getCredencial();
-            }
-
-            if (credencial != preferencia) {
-                throw new VagaIncompativelException(
-                    "vaga " + numero + " e reservada para " + preferencia);
-            }
+        if (credencial != preferencia) {
+            throw new VagaIncompativelException(
+                "vaga " + numero + " e reservada para " + preferencia);
         }
     }
 
