@@ -36,6 +36,7 @@ public class TelaCadastro extends JFrame {
     private JToggleButton btMoto;
     private JTextArea lista;
     private JLabel mensagem; // feedback de sucesso/erro embaixo do botao
+    private JLabel contador; // mostra quantos veiculos ja foram cadastrados
 
     private final java.util.ArrayList<Veiculo> veiculos = new java.util.ArrayList<>();
 
@@ -135,7 +136,20 @@ public class TelaCadastro extends JFrame {
         JLabel secao = new JLabel("VEÍCULOS CADASTRADOS");
         secao.setFont(fonte(11, Font.BOLD));
         secao.setForeground(CINZA);
-        esquerda(secao);
+
+        contador = new JLabel("Total: 0");
+        contador.setFont(fonte(11, Font.BOLD));
+        contador.setForeground(ACENTO);
+
+        // linha do cabecalho: titulo na esquerda, contador na direita
+        JPanel cabecalho = new JPanel();
+        cabecalho.setOpaque(false);
+        cabecalho.setLayout(new BoxLayout(cabecalho, BoxLayout.X_AXIS));
+        cabecalho.add(secao);
+        cabecalho.add(Box.createHorizontalGlue());
+        cabecalho.add(contador);
+        cabecalho.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
+        esquerda(cabecalho);
 
         lista = new JTextArea();
         lista.setEditable(false);
@@ -153,7 +167,7 @@ public class TelaCadastro extends JFrame {
         sp.setPreferredSize(new Dimension(10, 150));
         sp.setAlignmentX(LEFT_ALIGNMENT);
 
-        card.add(secao);
+        card.add(cabecalho);
         card.add(Box.createVerticalStrut(8));
         card.add(sp);
         return card;
@@ -194,6 +208,7 @@ public class TelaCadastro extends JFrame {
 
         veiculos.add(v);
         lista.append(v.toString() + "\n"); // toString polimorfico
+        contador.setText("Total: " + veiculos.size());
 
         placa.setText("");
         modelo.setText("");
